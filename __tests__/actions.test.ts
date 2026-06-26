@@ -24,8 +24,9 @@ describe('addMember', () => {
       status: 400,
     });
     const formData = new FormData();
+    formData.append('groupName', 'test-group');
     formData.append('memberName', '');
-    const result = await addMember('test-group', null, formData);
+    const result = await addMember(null, formData);
     expect(result).toEqual({ error: 'El nombre del miembro es obligatorio' });
   });
 
@@ -35,9 +36,17 @@ describe('addMember', () => {
       data: undefined,
     });
     const formData = new FormData();
+    formData.append('groupName', 'test-group');
     formData.append('memberName', 'Alice');
-    const result = await addMember('test-group', null, formData);
+    const result = await addMember(null, formData);
     expect(result).toEqual({ success: true });
+  });
+
+  it('returns error when groupName is missing', async () => {
+    const formData = new FormData();
+    formData.append('memberName', 'Alice');
+    const result = await addMember(null, formData);
+    expect(result).toEqual({ error: 'Group name is required' });
   });
 });
 
@@ -49,10 +58,11 @@ describe('addExpense', () => {
       status: 400,
     });
     const formData = new FormData();
+    formData.append('groupName', 'test-group');
     formData.append('paidBy', 'Alice');
     formData.append('amount', '-10');
     formData.append('description', 'Test');
-    const result = await addExpense('test-group', null, formData);
+    const result = await addExpense(null, formData);
     expect(result).toEqual({ error: 'El importe debe ser un número positivo' });
   });
 
@@ -62,15 +72,25 @@ describe('addExpense', () => {
       data: undefined,
     });
     const formData = new FormData();
+    formData.append('groupName', 'test-group');
     formData.append('paidBy', 'Alice');
     formData.append('amount', '42.50');
     formData.append('description', 'Hotel');
-    await addExpense('test-group', null, formData);
+    await addExpense(null, formData);
     expect(groupsService.addExpense).toHaveBeenCalledWith(
       'test-group',
       'Alice',
       42.5,
       'Hotel'
     );
+  });
+
+  it('returns error when groupName is missing', async () => {
+    const formData = new FormData();
+    formData.append('paidBy', 'Alice');
+    formData.append('amount', '10');
+    formData.append('description', 'Test');
+    const result = await addExpense(null, formData);
+    expect(result).toEqual({ error: 'Group name is required' });
   });
 });

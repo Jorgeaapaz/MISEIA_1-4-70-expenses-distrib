@@ -4,8 +4,7 @@ import { useActionState, useRef, useEffect } from 'react';
 import { addMember } from '@/app/actions';
 
 export default function AddMemberForm({ groupName }: { groupName: string }) {
-  const addMemberBound = addMember.bind(null, groupName);
-  const [state, formAction, isPending] = useActionState(addMemberBound, null);
+  const [state, formAction, isPending] = useActionState(addMember, null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -16,6 +15,7 @@ export default function AddMemberForm({ groupName }: { groupName: string }) {
 
   return (
     <form ref={formRef} action={formAction} className="flex gap-2">
+      <input type="hidden" name="groupName" value={groupName} />
       <input
         type="text"
         name="memberName"

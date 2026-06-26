@@ -10,8 +10,7 @@ export default function AddExpenseForm({
   groupName: string;
   members: string[];
 }) {
-  const addExpenseBound = addExpense.bind(null, groupName);
-  const [state, formAction, isPending] = useActionState(addExpenseBound, null);
+  const [state, formAction, isPending] = useActionState(addExpense, null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -30,6 +29,7 @@ export default function AddExpenseForm({
 
   return (
     <form ref={formRef} action={formAction} className="space-y-3">
+      <input type="hidden" name="groupName" value={groupName} />
       <div className="flex gap-2 flex-wrap">
         <select
           name="paidBy"

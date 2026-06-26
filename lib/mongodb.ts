@@ -7,16 +7,22 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
+const clientOptions = {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+};
+
 function getClientPromise(): Promise<MongoClient> {
   const uri = process.env.MONGODB_URI!;
   if (process.env.NODE_ENV === 'development') {
     if (!global._mongoClientPromise) {
-      global._mongoClientPromise = new MongoClient(uri).connect();
+      global._mongoClientPromise = new MongoClient(uri, clientOptions).connect();
     }
     return global._mongoClientPromise;
   }
   if (!clientPromise) {
-    clientPromise = new MongoClient(uri).connect();
+    clientPromise = new MongoClient(uri, clientOptions).connect();
   }
   return clientPromise;
 }

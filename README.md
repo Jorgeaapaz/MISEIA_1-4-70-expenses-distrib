@@ -1,5 +1,14 @@
 # Reparto de Gastos
 
+## Live Demo
+
+**[https://expenses-distrib.deviaaps.com](https://expenses-distrib.deviaaps.com)**
+
+> Deployed on GCP VM (Ubuntu 24.04) with Docker + Traefik v3.3 + MongoDB  
+> Auto-deployed via GitHub Actions on every push to `master`
+
+---
+
 A **Next.js 16 (App Router) + TypeScript web application** that lets groups of people track shared expenses and automatically calculates who owes whom to settle debts with the minimum number of transactions.
 
 ---

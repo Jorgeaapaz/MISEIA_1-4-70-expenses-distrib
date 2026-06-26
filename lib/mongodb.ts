@@ -1,31 +1,29 @@
 import { MongoClient, Db } from 'mongodb';
 
-const uri = process.env.MONGODB_URI!;
-const dbName = process.env.MONGODB_DB!;
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+let clientPromise: Promise<MongoClient> | undefined;
+let indexesCreated = false;
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-if (process.env.NODE_ENV === 'development') {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri);
-    global._mongoClientPromise = client.connect();
+function getClientPromise(): Promise<MongoClient> {
+  const uri = process.env.MONGODB_URI!;
+  if (process.env.NODE_ENV === 'development') {
+    if (!global._mongoClientPromise) {
+      global._mongoClientPromise = new MongoClient(uri).connect();
+    }
+    return global._mongoClientPromise;
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
+  if (!clientPromise) {
+    clientPromise = new MongoClient(uri).connect();
+  }
+  return clientPromise;
 }
 
-let indexesCreated = false;
-
 export async function getDb(): Promise<Db> {
-  const client = await clientPromise;
-  const db = client.db(dbName);
+  const client = await getClientPromise();
+  const db = client.db(process.env.MONGODB_DB!);
 
   if (!indexesCreated) {
     await db.collection('groups').createIndex({ name: 1 }, { unique: true });
@@ -36,4 +34,4 @@ export async function getDb(): Promise<Db> {
   return db;
 }
 
-export default clientPromise;
+export default { getDb };

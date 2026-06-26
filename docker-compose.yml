@@ -1,0 +1,19 @@
+services:
+  expenses-distrib:
+    build: .
+    container_name: expenses-distrib
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - miseia-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.expenses-distrib.rule=Host(`expenses-distrib.deviaaps.com`)"
+      - "traefik.http.routers.expenses-distrib.entrypoints=websecure"
+      - "traefik.http.routers.expenses-distrib.tls=true"
+      - "traefik.http.routers.expenses-distrib.tls.certresolver=cloudflare"
+      - "traefik.http.services.expenses-distrib.loadbalancer.server.port=3000"
+
+networks:
+  miseia-net:
+    external: true

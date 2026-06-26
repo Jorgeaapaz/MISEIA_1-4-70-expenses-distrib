@@ -1,24 +1,15 @@
-import { getDb } from '@/lib/mongodb';
+import * as groupsService from '@/lib/services/groups.service';
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const db = await getDb();
-  const group = await db.collection('groups').findOne({ name });
-
-  if (!group) {
-    return Response.json({ error: 'Group not found' }, { status: 404 });
+  const result = await groupsService.getExpenses(name);
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: result.status ?? 404 });
   }
-
-  const expenses = await db
-    .collection('expenses')
-    .find({ groupId: group._id })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  return Response.json(expenses);
+  return Response.json(result.data);
 }
 
 export async function POST(
@@ -26,35 +17,16 @@ export async function POST(
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const { paidBy, amount, description } = await request.json();
-
-  if (!paidBy || !amount || !description) {
-    return Response.json({ error: 'paidBy, amount, and description are required' }, { status: 400 });
+  const body = await request.json();
+  const amount = parseFloat(body?.amount);
+  const result = await groupsService.addExpense(
+    name,
+    body?.paidBy ?? '',
+    amount,
+    body?.description ?? ''
+  );
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: result.status ?? 400 });
   }
-
-  const parsedAmount = parseFloat(amount);
-  if (isNaN(parsedAmount) || parsedAmount <= 0) {
-    return Response.json({ error: 'Amount must be a positive number' }, { status: 400 });
-  }
-
-  const db = await getDb();
-  const group = await db.collection('groups').findOne({ name });
-
-  if (!group) {
-    return Response.json({ error: 'Group not found' }, { status: 404 });
-  }
-
-  if (!group.members.includes(paidBy)) {
-    return Response.json({ error: 'paidBy must be a member of the group' }, { status: 400 });
-  }
-
-  await db.collection('expenses').insertOne({
-    groupId: group._id,
-    paidBy,
-    amount: parsedAmount,
-    description: description.trim(),
-    createdAt: new Date(),
-  });
-
   return Response.json({ success: true }, { status: 201 });
 }

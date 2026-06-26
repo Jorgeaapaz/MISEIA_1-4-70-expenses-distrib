@@ -1,16 +1,13 @@
-import { getDb } from '@/lib/mongodb';
+import * as groupsService from '@/lib/services/groups.service';
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const db = await getDb();
-  const group = await db.collection('groups').findOne({ name });
-
-  if (!group) {
-    return Response.json({ error: 'Group not found' }, { status: 404 });
+  const result = await groupsService.getGroup(name);
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: result.status ?? 404 });
   }
-
-  return Response.json(group);
+  return Response.json(result.data);
 }

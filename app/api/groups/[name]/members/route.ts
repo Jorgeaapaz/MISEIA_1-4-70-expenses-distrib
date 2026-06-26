@@ -1,25 +1,14 @@
-import { getDb } from '@/lib/mongodb';
+import * as groupsService from '@/lib/services/groups.service';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ name: string }> }
 ) {
   const { name } = await params;
-  const { memberName } = await request.json();
-
-  if (!memberName || typeof memberName !== 'string' || memberName.trim().length === 0) {
-    return Response.json({ error: 'Member name is required' }, { status: 400 });
+  const body = await request.json();
+  const result = await groupsService.addMember(name, body?.memberName ?? '');
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: result.status ?? 400 });
   }
-
-  const db = await getDb();
-  const result = await db.collection('groups').updateOne(
-    { name },
-    { $addToSet: { members: memberName.trim() } }
-  );
-
-  if (result.matchedCount === 0) {
-    return Response.json({ error: 'Group not found' }, { status: 404 });
-  }
-
   return Response.json({ success: true });
 }
